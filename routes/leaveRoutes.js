@@ -1,51 +1,54 @@
 const express = require('express');
-const Leave = require('../models/leave');
-
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
 
-// Create a new leave record
-router.post('/', async (req, res) => {
-  try {
-    const leave = await Leave.create(req.body);
-    res.status(201).json(leave);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+const leavesFilePath = path.join(__dirname, '../storage/leaves.json');
+
+// Utility function to read data from JSON
+const readLeaves = () => {
+  const data = fs.readFileSync(leavesFilePath, 'utf8');
+  return JSON.parse(data || '[]');
+};
+
+// Utility function to write data to JSON
+const writeLeaves = (data) => {
+  fs.writeFileSync(leavesFilePath, JSON.stringify(data, null, 2));
+};
 
 // Get all leave records
-router.get('/', async (req, res) => {
+router.get('/', (req, res) => {
   try {
-    const leaves = await Leave.findAll();
+    const leaves = readLeaves();
     res.json(leaves);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to fetch leave records' });
   }
 });
 
-// Update a leave record
-router.put('/:id', async (req, res) => {
+// Add a new leave record
+router.post('/', (req, res) => {
   try {
-    const leave = await Leave.findByPk(req.params.id);
-    if (!leave) return res.status(404).json({ error: 'Leave not found' });
-
-    await leave.update(req.body);
-    res.json(leave);
+    const newLeave = req.body;
+    const leaves = readLeaves();
+    leaves.push(newLeave);
+    writeLeaves(leaves);
+    res.status(201).json({ message: 'Leave record added successfully', leave: newLeave });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to add leave record' });
   }
 });
 
-// Delete a leave record
-router.delete('/:id', async (req, res) => {
+// Delete a leave record by ID (example)
+router.delete('/:id', (req, res) => {
   try {
-    const leave = await Leave.findByPk(req.params.id);
-    if (!leave) return res.status(404).json({ error: 'Leave not found' });
-
-    await leave.destroy();
-    res.status(204).send();
+    const leaveId = req.params.id;
+    let leaves = readLeaves();
+    leaves = leaves.filter((leave) => leave.id !== leaveId);
+    writeLeaves(leaves);
+    res.json({ message: 'Leave record deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to delete leave record' });
   }
 });
 

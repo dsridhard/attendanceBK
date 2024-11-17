@@ -1,8 +1,18 @@
 {
+  "name": "leave-tracker",
+  "version": "1.0.0",
+  "main": "api/app.js",
+  "scripts": {
+    "start": "node api/app.js",
+    "dev": "nodemon api/app.js"
+  },
   "dependencies": {
-    "body-parser": "^1.20.3",
-    "express": "^4.21.1",
-    "sequelize": "^6.37.5",
-    "sqlite3": "^5.1.7"
-  }
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2"
+  },
+  "description": "",
+  "devDependencies": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
